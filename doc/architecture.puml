@@ -1,0 +1,34 @@
+@startuml name "URL Organizer - High-level architecture"
+title URL Organizer - High-level architecture
+
+actor User
+
+rectangle "Frontend (browser)" as FE {
+  [UI (Alpine.js / Tailwind)]
+}
+
+rectangle "Backend (Node/Express)" as BE {
+  [API endpoints]
+}
+
+database "MongoDB" as DB
+cloud "GitHub (repo)" as GH
+
+User --> FE : interacts
+FE --> BE : REST / Fetch
+BE --> DB : read / write
+BE --> GH : (optional) CI / push hooks
+
+note right of BE
+  - routes: /api/urls, /api/categories, /api/ingest
+  - auth: none (local)
+  - config: env-driven (MONGO_URI, PORT)
+end note
+
+note left of FE
+  - static assets in `public/`
+  - compiled frontend JS in `public/js/`
+end note
+
+skinparam monochrome true
+@enduml

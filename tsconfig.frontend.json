@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "rootDir": "frontend",
+    "outDir": "public/js",
+    "sourceMap": true,
+    "inlineSources": false
+  },
+  "include": ["frontend/**/*"],
+  "exclude": ["node_modules", "dist", "server", "public"]
+}

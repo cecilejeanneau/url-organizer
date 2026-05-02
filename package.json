@@ -1,0 +1,35 @@
+{
+  "name": "url-organizer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "packageManager": "pnpm@10.2.0",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "concurrently \"tsx watch server/index.ts\" \"tsc -p tsconfig.frontend.json -w\" \"pnpm dev:css\"",
+    "build": "pnpm build:server && pnpm build:front && pnpm build:css",
+    "build:server": "tsc -p tsconfig.json",
+    "build:front": "tsc -p tsconfig.frontend.json",
+    "build:css": "tailwindcss -i frontend/styles.css -o public/css/app.css --minify",
+    "dev:css": "tailwindcss -i frontend/styles.css -o public/css/app.css --watch",
+    "typecheck": "pnpm typecheck:server && pnpm typecheck:front",
+    "typecheck:server": "tsc -p tsconfig.json --noEmit",
+    "typecheck:front": "tsc -p tsconfig.frontend.json --noEmit",
+    "test": "node --require tsx/cjs --test server/__tests__/utils.test.ts"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "4.22.1",
+    "mongodb": "6.21.0"
+  },
+  "devDependencies": {
+    "@types/alpinejs": "^3.13.11",
+    "@types/express": "4.17.25",
+    "@types/node": "22.19.17",
+    "alpinejs": "^3.15.11",
+    "concurrently": "9.2.1",
+    "tailwindcss": "3",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  }
+}
