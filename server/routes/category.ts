@@ -24,7 +24,7 @@ router.get('/', asyncHandler(async (_req, res) => {
   const [usageRows, metaRows] = await Promise.all([
     urlsCol()
       .aggregate([
-        { $match: { deleted: false, category: { $ne: '' } } },
+        { $match: { deleted: { $ne: true }, category: { $ne: '' } } },
         { $group: { _id: '$category', count: { $sum: 1 } } },
         { $sort: { _id: 1 } },
       ])
@@ -42,12 +42,12 @@ router.get('/', asyncHandler(async (_req, res) => {
 
   for (const row of usageRows) {
     const id = row['_id'] as string;
-    merged.set(id, { name: id, count: row['count'] as number, color: '#3b82f6', icon: 'folder' });
+    merged.set(id, { name: id, count: row['count'] as number, color: '#3b82f6', icon: '📁' });
   }
 
   for (const meta of metaRows) {
     const name = meta['name'] as string;
-    const prev = merged.get(name) ?? { name, count: 0, color: '#3b82f6', icon: 'folder' };
+    const prev = merged.get(name) ?? { name, count: 0, color: '#3b82f6', icon: '📁' };
     merged.set(name, {
       ...prev,
       color: normalizeCategoryColor(meta['color']),

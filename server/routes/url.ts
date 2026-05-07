@@ -19,7 +19,7 @@ router.get('/', asyncHandler(async (req, res) => {
   const category = String(req.query.category ?? '').trim();
   const host = String(req.query.host ?? '').trim().toLowerCase();
 
-  const q: Record<string, unknown> = { deleted: false };
+  const q: Record<string, unknown> = { deleted: { $ne: true } };
   if (category) q.category = category;
   if (host) q.host = host;
 

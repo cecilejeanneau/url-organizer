@@ -4,6 +4,7 @@ export interface UrlItem {
   host: string;
   name: string;
   category: string;
+  _categoryOpen?: boolean;
 }
 
 export interface Category {
@@ -12,6 +13,8 @@ export interface Category {
   count: number;
   color: string;
   icon: string;
+  _pickerOpen?: boolean;
+  _expanded?: boolean;
 }
 
 export interface ApiResponse<T> {

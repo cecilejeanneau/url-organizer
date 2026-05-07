@@ -24,6 +24,6 @@ async function start(): Promise<void> {
   });
 }
 
-start().catch(() => {
+start().catch(err => {
   process.exit(1);
 });

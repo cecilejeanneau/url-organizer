@@ -1,20 +1,37 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>URL Organizer</title>
   <link rel="stylesheet" href="./css/app.css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='50'%3E%F0%9F%94%97%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0" />
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='50'%3E%F0%9F%94%97%3C/text%3E%3C/svg%3E" />
   <style>
-    input[type="color"] { -webkit-appearance: none; appearance: none; }
-    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-    input[type="color"]::-webkit-color-swatch { border: none; }
-    input[type="color"]::-moz-color-swatch { border: none; }
+    input[type="color"] {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: none;
+    }
+
+    input[type="color"]::-moz-color-swatch {
+      border: none;
+    }
   </style>
 </head>
-<body class="m-0 bg-gradient-to-b from-slate-50 to-slate-100 text-slate-900 antialiased" x-data="urlOrganizerApp" x-init="init()">
+
+<body class="m-0 bg-gradient-to-b from-slate-50 to-slate-100 text-slate-900 antialiased" x-data="urlOrganizerApp"
+  x-init="init()">
   <main class="mx-auto my-5 max-w-[1320px] px-4 pb-8">
     <header>
       <h1 class="m-0 flex items-center gap-2 text-3xl font-bold tracking-tight">
@@ -25,177 +42,256 @@
     </header>
 
     <section class="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-      <label class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50 cursor-pointer" title="Import local URLs file" aria-label="Import local URLs file">
+      <label
+        class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50 cursor-pointer"
+        title="Import local URLs file" aria-label="Import local URLs file">
         <span class="material-symbols-rounded text-base leading-none">download</span>
         <span x-text="isImporting ? 'Importing...' : 'Import local URLs file'"></span>
         <input type="file" accept=".md" @change="importFromSelectedFile($event)" class="hidden" />
       </label>
 
-      <input
-        type="text"
-        placeholder="Search by name, URL, or domain"
+      <input type="text" placeholder="Search by name, URL, or domain"
         class="w-[300px] rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-sky-300 focus:ring"
-        x-model="search"
-      />
+        x-model="search" />
 
-      <select
-        title="categories"
+      <select title="categories"
         class="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-sky-300 focus:ring"
-        x-model="categoryFilter"
-      >
+        x-model="categoryFilter">
         <option value="">All categories</option>
         <template x-for="category in categoryOptions()" :key="category.persistedName">
           <option :value="category.name" x-text="`${category.name} (${category.count})`"></option>
         </template>
       </select>
 
-      <span class="ml-auto rounded-full border border-sky-200 bg-sky-100 px-3 py-1.5 text-sm font-semibold text-sky-800" x-text="`${visibleCount()} URLs`"></span>
+      <span class="ml-auto rounded-full border border-sky-200 bg-sky-100 px-3 py-1.5 text-sm font-semibold text-sky-800"
+        x-text="`${visibleCount()} URLs`"></span>
     </section>
 
     <section class="mt-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-      <h2 class="m-0 text-lg font-semibold">Categories</h2>
-
-      <div class="mt-2 grid gap-2 md:grid-cols-[minmax(180px,260px)_90px_70px_140px]">
-        <input
-          type="text"
-          placeholder="Category name"
+      <!-- Add category form -->
+      <div class="flex flex-wrap items-center gap-2 pb-3 border-b border-slate-200">
+        <input type="text" placeholder="Category name"
           class="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-sky-300 focus:ring"
-          x-model="newCategoryName"
-        />
+          x-model="newCategoryName" />
         <div class="relative">
-          <button
-            type="button"
-            @click="newCategoryPickerOpen = !newCategoryPickerOpen"
-            class="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-            title="Icon"
-          >
+          <button type="button" @click="newCategoryPickerOpen = !newCategoryPickerOpen"
+            class="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" title="Icon">
             <span class="material-symbols-rounded text-base leading-none" x-text="newCategoryIcon"></span>
           </button>
-          <div
-            x-show="newCategoryPickerOpen"
-            @click.away="newCategoryPickerOpen = false"
-            class="absolute left-0 z-20 mt-2 w-48 rounded bg-white border p-2 shadow"
-          >
+          <div x-show="newCategoryPickerOpen" @click.away="newCategoryPickerOpen = false"
+            class="absolute left-0 z-20 mt-2 w-48 rounded bg-white border p-2 shadow" style="display:none">
             <div class="grid grid-cols-5 gap-2">
               <template x-for="icon in ['folder','link','star','bookmark','label','home','work','school','favorite','shopping_bag']" :key="icon">
-                <button type="button" @click="newCategoryIcon = icon; newCategoryPickerOpen = false" class="p-2 rounded hover:bg-slate-100">
+                <button type="button" @click="newCategoryIcon = icon; newCategoryPickerOpen = false"
+                  class="p-2 rounded hover:bg-slate-100">
                   <span class="material-symbols-rounded text-lg leading-none" x-text="icon"></span>
                 </button>
               </template>
             </div>
           </div>
         </div>
-        <input
-          type="color"
-          title="Color"
-          class="h-10 w-10 rounded-full cursor-pointer"
-          x-model="newCategoryColor"
-        />
-        <button
-          class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
-          @click="createCategory()"
-        >
+        <input type="color" title="Color" class="shrink-0 cursor-pointer rounded-full border-0 p-0" style="width:40px;height:40px;min-width:40px" x-model="newCategoryColor" />
+        <button class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
+          @click="createCategory()">
           <span class="material-symbols-rounded text-base leading-none">add_circle</span>
           <span>Add category</span>
         </button>
       </div>
 
-      <div class="mt-2 flex flex-col gap-2">
+      <!-- Grouped URL list -->
+      <div class="mt-3 flex flex-col gap-2">
+
+        <!-- One block per category -->
         <template x-for="category in categories" :key="category.persistedName">
-          <div class="grid items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2 md:grid-cols-[minmax(160px,1fr)_80px_64px_90px_90px]">
-            <input class="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-sky-300 focus:ring" type="text" placeholder="Name" x-model="category.name" />
-            <div class="relative">
-              <button type="button" @click="category._pickerOpen = !category._pickerOpen" class="rounded-lg border border-slate-300 px-3 py-2 text-center text-sm bg-white">
-                <span class="material-symbols-rounded text-base leading-none" x-text="category.icon" :style="`color: ${category.color}`"></span>
-              </button>
-              <div x-show="category._pickerOpen" @click.away="category._pickerOpen = false" class="absolute left-0 z-20 mt-2 w-48 rounded bg-white border p-2 shadow" style="display:none">
-                <div class="grid grid-cols-5 gap-2">
-                  <template x-for="icon in ['folder','link','star','bookmark','label','home','work','school','favorite','shopping_bag']" :key="icon">
-                    <button type="button" @click="category.icon = icon; category._pickerOpen = false" class="p-2 rounded hover:bg-slate-100">
-                      <span class="material-symbols-rounded text-lg leading-none" x-text="icon"></span>
-                    </button>
-                  </template>
+          <div x-show="showCategoryGroup(category.name)" class="overflow-hidden rounded-lg border border-slate-200" style="display:none">
+            <!-- Category header -->
+            <div class="flex items-center gap-2 bg-slate-50 px-3 py-2"
+              :style="`border-left: 4px solid ${category.color}`">
+              <div class="relative shrink-0">
+                <button type="button" @click="category._pickerOpen = !category._pickerOpen"
+                  class="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-200">
+                  <span class="material-symbols-rounded text-base leading-none" x-text="category.icon"
+                    :style="`color:${category.color}`"></span>
+                </button>
+                <div x-show="category._pickerOpen" @click.away="category._pickerOpen = false"
+                  class="absolute left-0 z-20 mt-1 w-48 rounded bg-white border p-2 shadow" style="display:none">
+                  <div class="grid grid-cols-5 gap-2">
+                    <template x-for="icon in ['folder','link','star','bookmark','label','home','work','school','favorite','shopping_bag']" :key="icon">
+                      <button type="button"
+                        @click="category.icon = icon; category._pickerOpen = false; autoSaveCategory(category)"
+                        class="p-2 rounded hover:bg-slate-100">
+                        <span class="material-symbols-rounded text-lg leading-none" x-text="icon"></span>
+                      </button>
+                    </template>
+                  </div>
                 </div>
               </div>
+              <input
+                class="flex-1 bg-transparent text-sm font-semibold text-slate-800 outline-none ring-sky-300 focus:ring rounded px-1"
+                type="text" placeholder="Category name" x-model="category.name"
+                @input.debounce.500ms="autoSaveCategory(category)" />
+              <input type="color" title="Color" class="shrink-0 cursor-pointer rounded-full border-0 p-0" style="width:28px;height:28px;min-width:28px" x-model="category.color" @change="autoSaveCategory(category)" />
+              <span class="shrink-0 text-xs text-slate-400" x-text="`${urlsByCategory(category.name).length} URLs`"></span>
+              <button type="button"
+                class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded hover:bg-slate-200 text-slate-500"
+                @click="toggleCategoryExpanded(category)">
+                <span class="material-symbols-rounded leading-none" style="font-size:18px"
+                  x-text="category._expanded ? 'expand_less' : 'expand_more'"></span>
+              </button>
             </div>
-            <input class="h-10 w-10 rounded-full border-0 cursor-pointer" type="color" title="Color" x-model="category.color" />
-            <span class="text-right text-xs text-slate-500" x-text="`${category.count} URLs`"></span>
-            <button class="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-100" @click="saveCategory(category)">
-              <span class="material-symbols-rounded text-base leading-none">check</span>
-              <span>Save</span>
-            </button>
+            <!-- URL rows -->
+            <div x-show="category._expanded">
+              <template x-if="urlsByCategory(category.name).length === 0">
+                <p class="m-0 px-4 py-3 text-sm italic text-slate-400">No links in this category yet.</p>
+              </template>
+              <template x-for="item in urlsByCategory(category.name)" :key="`${category.persistedName}-${item.id}`">
+                <div class="flex items-start gap-3 border-t border-slate-100 px-3 py-2">
+                  <input
+                    class="w-40 shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none ring-sky-300 focus:ring"
+                    type="text" placeholder="Link name" x-model="item.name"
+                    @input.debounce.450ms="saveUrlName(item)" />
+                  <div class="min-w-0 flex-1">
+                    <a :href="item.url" target="_blank" rel="noreferrer"
+                      class="break-all text-sm text-sky-800 hover:underline" x-text="item.url"></a>
+                    <small class="block text-xs text-slate-400" x-text="item.host"></small>
+                  </div>
+                  <div class="relative shrink-0" @click.away="item._categoryOpen = false">
+                    <button
+                      class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs"
+                      type="button" @click="item._categoryOpen = !item._categoryOpen">
+                      <span class="material-symbols-rounded leading-none" style="font-size:14px"
+                        :style="`color:${category.color}`" x-text="category.icon"></span>
+                      <span :style="`color:${category.color}`" x-text="category.name"></span>
+                      <span class="material-symbols-rounded leading-none text-slate-400" style="font-size:14px">expand_more</span>
+                    </button>
+                    <div x-show="item._categoryOpen"
+                      class="absolute right-0 z-20 mt-1 max-h-64 w-44 overflow-auto rounded-lg border border-slate-200 bg-white p-1 shadow"
+                      style="display:none">
+                      <button type="button"
+                        class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-slate-100"
+                        @click="setUrlCategory(item, '')">
+                        <span class="material-symbols-rounded leading-none text-slate-400" style="font-size:14px">block</span>
+                        <span class="text-slate-500">Uncategorized</span>
+                      </button>
+                      <template x-for="opt in categoryOptions()" :key="`mv-${item.id}-${opt.persistedName}`">
+                        <button type="button"
+                          class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-slate-100"
+                          @click="setUrlCategory(item, opt.name)">
+                          <span class="material-symbols-rounded leading-none" style="font-size:14px"
+                            :style="`color:${opt.color}`" x-text="opt.icon"></span>
+                          <span :style="`color:${opt.color}`" x-text="opt.name"></span>
+                        </button>
+                      </template>
+                    </div>
+                  </div>
+                  <button
+                    class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-rose-200 text-rose-700 transition hover:-translate-y-px hover:bg-rose-100"
+                    title="Delete" type="button" aria-label="Delete URL" @click="deleteUrl(item)">
+                    <span class="material-symbols-rounded leading-none" style="font-size:18px">delete</span>
+                  </button>
+                </div>
+              </template>
+            </div>
           </div>
         </template>
-      </div>
-    </section>
 
-    <section class="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-      <h2 class="m-0 text-lg font-semibold">URLs</h2>
-      <table class="mt-2 w-full border-collapse">
-        <thead>
-          <tr>
-            <th class="border-b border-slate-200 px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Name</th>
-            <th class="border-b border-slate-200 px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">URL</th>
-            <th class="border-b border-slate-200 px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Category</th>
-            <th class="border-b border-slate-200 px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <template x-for="item in filteredItems()" :key="item.id">
-            <tr>
-              <td class="border-b border-slate-100 px-2 py-2 align-top">
+        <!-- Uncategorized group -->
+        <div x-show="showUncategorizedGroup()" class="overflow-hidden rounded-lg border border-slate-200" style="display:none">
+          <div class="flex items-center gap-2 border-l-4 border-slate-300 bg-slate-50 px-3 py-2">
+            <span class="material-symbols-rounded text-base leading-none text-slate-400">help_outline</span>
+            <span class="flex-1 text-sm font-semibold text-slate-600">Uncategorized</span>
+            <span class="shrink-0 text-xs text-slate-400" x-text="`${uncategorizedItems().length} URLs`"></span>
+            <button type="button"
+              class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded hover:bg-slate-200 text-slate-500"
+              @click="uncategorizedExpanded = !uncategorizedExpanded">
+              <span class="material-symbols-rounded leading-none" style="font-size:18px"
+                x-text="uncategorizedExpanded ? 'expand_less' : 'expand_more'"></span>
+            </button>
+          </div>
+          <div x-show="uncategorizedExpanded">
+            <template x-for="item in uncategorizedItems()" :key="`uncat-${item.id}`">
+              <div class="flex items-start gap-3 border-t border-slate-100 px-3 py-2">
                 <input
-                  class="w-full min-w-[170px] rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-sky-300 focus:ring"
-                  type="text"
-                  placeholder="Link name"
-                  x-model="item.name"
-                  @input.debounce.450ms="saveUrlName(item)"
-                />
-              </td>
-              <td class="border-b border-slate-100 px-2 py-2 align-top">
-                <a :href="item.url" target="_blank" rel="noreferrer" class="break-all text-sky-800 hover:underline" x-text="item.url"></a>
-                <small class="mt-1 block text-xs text-slate-500" x-text="item.host"></small>
-                <template x-if="categoryMeta(item.category)">
-                  <span
-                    class="mt-2 inline-flex items-center gap-1 rounded-full border bg-white/70 px-2 py-0.5 text-xs font-medium"
-                    :style="`border-color:${categoryMeta(item.category)?.color};color:${categoryMeta(item.category)?.color}`"
-                  >
-                    <span class="material-symbols-rounded" x-text="categoryMeta(item.category)?.icon"></span>
-                    <span class="ml-1" x-text="categoryMeta(item.category)?.name"></span>
-                  </span>
-                </template>
-              </td>
-              <td class="border-b border-slate-100 px-2 py-2 align-top">
-                <select
-                  class="w-full min-w-[170px] rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-sky-300 focus:ring"
-                  title="Category"
-                  x-model="item.category"
-                  @change="updateUrlCategory(item)"
-                >
-                  <option value="">Uncategorized</option>
-                  <template x-for="category in categoryOptions()" :key="category.persistedName">
-                    <option :value="category.name" x-text="`${category.icon} ${category.name}`"></option>
-                  </template>
-                </select>
-              </td>
-              <td class="border-b border-slate-100 px-2 py-2 align-top">
+                  class="w-40 shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none ring-sky-300 focus:ring"
+                  type="text" placeholder="Link name" x-model="item.name"
+                  @input.debounce.450ms="saveUrlName(item)" />
+                <div class="min-w-0 flex-1">
+                  <a :href="item.url" target="_blank" rel="noreferrer"
+                    class="break-all text-sm text-sky-800 hover:underline" x-text="item.url"></a>
+                  <small class="block text-xs text-slate-400" x-text="item.host"></small>
+                </div>
+                <div class="relative shrink-0" @click.away="item._categoryOpen = false">
+                  <button
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-500"
+                    type="button" @click="item._categoryOpen = !item._categoryOpen">
+                    <span class="material-symbols-rounded leading-none text-slate-400" style="font-size:14px">block</span>
+                    <span>Uncategorized</span>
+                    <span class="material-symbols-rounded leading-none text-slate-400" style="font-size:14px">expand_more</span>
+                  </button>
+                  <div x-show="item._categoryOpen"
+                    class="absolute right-0 z-20 mt-1 max-h-64 w-44 overflow-auto rounded-lg border border-slate-200 bg-white p-1 shadow"
+                    style="display:none">
+                    <template x-for="opt in categoryOptions()" :key="`mv-uncat-${item.id}-${opt.persistedName}`">
+                      <button type="button"
+                        class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-slate-100"
+                        @click="setUrlCategory(item, opt.name)">
+                        <span class="material-symbols-rounded leading-none" style="font-size:14px"
+                          :style="`color:${opt.color}`" x-text="opt.icon"></span>
+                        <span :style="`color:${opt.color}`" x-text="opt.name"></span>
+                      </button>
+                    </template>
+                  </div>
+                </div>
                 <button
-                  class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 text-rose-700 transition hover:-translate-y-px hover:bg-rose-100"
-                  title="Delete"
-                  type="button"
-                  aria-label="Delete URL"
-                  @click="deleteUrl(item)"
-                >
-                  <span class="material-symbols-rounded leading-none">delete</span>
+                  class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-rose-200 text-rose-700 transition hover:-translate-y-px hover:bg-rose-100"
+                  title="Delete" type="button" aria-label="Delete URL" @click="deleteUrl(item)">
+                  <span class="material-symbols-rounded leading-none" style="font-size:18px">delete</span>
                 </button>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
+              </div>
+            </template>
+          </div>
+        </div>
+
+      </div>
     </section>
   </main>
 
+  <!-- Confirm modal -->
+  <div
+    x-show="confirmVisible"
+    class="fixed inset-0 z-[2000] flex items-center justify-center p-4"
+    style="display:none"
+    role="dialog" aria-modal="true"
+  >
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="confirmResolve(false)"></div>
+    <!-- Card -->
+    <div class="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+      <div class="flex flex-col items-center gap-4 text-center">
+        <div class="flex h-14 w-14 items-center justify-center rounded-full bg-rose-100">
+          <span class="material-symbols-rounded text-3xl leading-none text-rose-600">delete</span>
+        </div>
+        <div>
+          <p class="text-base font-semibold text-slate-800" x-text="confirmTitle"></p>
+          <p class="mt-1 text-sm text-slate-500" x-text="confirmMessage"></p>
+        </div>
+        <div class="flex w-full gap-3">
+          <button
+            type="button"
+            class="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
+            @click="confirmResolve(false)"
+          >Cancel</button>
+          <button
+            type="button"
+            class="flex-1 rounded-xl bg-rose-600 py-2.5 text-sm font-medium text-white hover:bg-rose-700 transition"
+            @click="confirmResolve(true)"
+          >Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
   <div
     class="pointer-events-none fixed bottom-5 right-5 z-[1000] max-w-[340px] translate-y-2 rounded-xl px-4 py-3 text-sm font-medium text-white opacity-0 shadow-2xl transition duration-200"
     :class="{
@@ -204,11 +300,7 @@
       'bg-emerald-700': toastType === 'success',
       'bg-rose-700': toastType === 'error',
       'bg-slate-900': toastType === 'info'
-    }"
-    role="status"
-    aria-live="polite"
-    x-text="toastMessage"
-  ></div>
+    }" role="status" aria-live="polite" x-text="toastMessage"></div>
 
   <script type="module">
     import Alpine from './vendor/alpine.esm.js';
@@ -218,5 +310,14 @@
     window.Alpine = Alpine;
     Alpine.start();
   </script>
+  <script>
+    // Dev live reload via SSE
+    (function () {
+      const es = new EventSource('/__livereload');
+      es.onmessage = () => location.reload();
+      es.onerror = () => es.close();
+    })();
+  </script>
 </body>
+
 </html>
