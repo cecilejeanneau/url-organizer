@@ -24,6 +24,9 @@ interface UrlOrganizerStore {
   filteredItems(): UrlItem[];
   visibleCount(): number;
   categoryOptions(): Category[];
+  categoryItems(categoryName: string): UrlItem[];
+  iconChoices(): Array<{ value: string; label: string }>;
+  iconLabel(iconName: string): string;
   categoryMeta(name: string): Category | null;
   uncategorizedExpanded: boolean;
   urlsByCategory(name: string): UrlItem[];
@@ -33,7 +36,7 @@ interface UrlOrganizerStore {
   toggleCategoryExpanded(category: Category): void;
   createCategory(): Promise<void>;
   autoSaveCategory(category: Category): Promise<void>;
-  saveCategory(category: Category): Promise<void>;
+  saveCategory(category: Category, showSuccessToast?: boolean): Promise<void>;
   saveUrlName(item: UrlItem): Promise<void>;
   updateUrlCategory(item: UrlItem): Promise<void>;
   setUrlCategory(item: UrlItem, categoryName: string): Promise<void>;
@@ -114,6 +117,10 @@ export function createUrlOrganizerStore(): UrlOrganizerStore {
       );
       const data = await apiRequest<CategoriesResponse>('/api/categories');
       const rows = data.categories || [];
+      const previousByName = new Map(
+        this.categories.map((category) => [category.persistedName || category.name, category as Category & { _pickerOpen?: boolean; _expanded?: boolean }])
+      );
+
       this.categories = rows.map((row) => ({
         ...row,
         persistedName: row.persistedName || row.name,
@@ -143,6 +150,56 @@ export function createUrlOrganizerStore(): UrlOrganizerStore {
     categoryOptions(this: UrlOrganizerStore) {
       return this.categories;
     },
+
+    categoryItems(categoryName) {
+      return this.items.filter((item) => item.category === categoryName);
+    },
+
+    iconChoices() {
+      return [
+        { value: 'folder', label: 'Folder' },
+        { value: 'link', label: 'Link' },
+        { value: 'star', label: 'Star' },
+        { value: 'bookmark', label: 'Bookmark' },
+        { value: 'label', label: 'Label' },
+        { value: 'home', label: 'Home' },
+        { value: 'work', label: 'Work' },
+        { value: 'school', label: 'School' },
+        { value: 'favorite', label: 'Favorite' },
+        { value: 'shopping_bag', label: 'Shopping bag' },
+        { value: 'cloud', label: 'Cloud' },
+      ];
+    },
+
+    iconLabel(iconName) {
+      const match = this.iconChoices().find((choice) => choice.value === iconName);
+      return match?.label || 'Folder';
+    },
+
+    // categoryItems(categoryName) {
+    //   return this.items.filter((item) => item.category === categoryName);
+    // },
+
+    // iconChoices() {
+    //   return [
+    //     { value: 'folder', label: 'Folder' },
+    //     { value: 'link', label: 'Link' },
+    //     { value: 'star', label: 'Star' },
+    //     { value: 'bookmark', label: 'Bookmark' },
+    //     { value: 'label', label: 'Label' },
+    //     { value: 'home', label: 'Home' },
+    //     { value: 'work', label: 'Work' },
+    //     { value: 'school', label: 'School' },
+    //     { value: 'favorite', label: 'Favorite' },
+    //     { value: 'shopping_bag', label: 'Shopping bag' },
+    //     { value: 'cloud', label: 'Cloud' },
+    //   ];
+    // },
+
+    // iconLabel(iconName) {
+    //   const match = this.iconChoices().find((choice) => choice.value === iconName);
+    //   return match?.label || 'Folder';
+    // },
 
     categoryMeta(this: UrlOrganizerStore, name) {
       if (!name) return null;
@@ -229,7 +286,7 @@ export function createUrlOrganizerStore(): UrlOrganizerStore {
       this.showToast('Category created', 'success');
     },
 
-    async saveCategory(this: UrlOrganizerStore, category) {
+    async saveCategory(this: UrlOrganizerStore, category, showSuccessToast = true) {
       const oldName = category.persistedName || category.name;
       const nextName = category.name.trim();
       if (!nextName) {
@@ -247,7 +304,9 @@ export function createUrlOrganizerStore(): UrlOrganizerStore {
       });
 
       await this.refreshAll();
-      this.showToast('Category updated', 'success');
+      if (showSuccessToast) {
+        this.showToast('Category updated', 'success');
+      }
     },
 
     async autoSaveCategory(this: UrlOrganizerStore, category) {
@@ -273,7 +332,7 @@ export function createUrlOrganizerStore(): UrlOrganizerStore {
       }
     },
 
-    async saveUrlName(this: UrlOrganizerStore, item) {
+    async saveUrlName(item) {
       const name = item.name?.trim() || '';
       await apiRequest(`/api/urls/${item.id}`, {
         method: 'PATCH',

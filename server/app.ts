@@ -39,6 +39,19 @@ app.use(express.static(path.join(__dirname, '..', 'public'), {
     res.setHeader('Surrogate-Control', 'no-store');
   },
 }));
+app.use(express.static(path.join(__dirname, '..', 'public'), {
+  etag: !isDev,
+  lastModified: !isDev,
+  maxAge: isDev ? 0 : '1h',
+  setHeaders: (res) => {
+    if (!isDev) return;
+    // Avoid stale HTML/CSS/JS during local development.
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
+  },
+}));
 
 // ── API Routes ─────────────────────────────────────────────────────────────────
 app.use('/api/urls',       urlRouter);
